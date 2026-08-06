@@ -39,11 +39,19 @@ class BarBotViewModel(application: Application) : AndroidViewModel(application) 
     var connectionError by mutableStateOf<String?>(null)
         private set
 
-    /** Zuletzt bestellter Drink - Grundlage fuer die Info-Seite. */
-    var lastDrink by mutableStateOf<Drink?>(null)
+    /** Der Drink, dessen Infoseite gerade offen ist. */
+    var selectedDrink by mutableStateOf<Drink?>(null)
         private set
 
-    /** Restliche Sperrzeit in Sekunden, 0 = kein Drink gesperrt. */
+    /** True, sobald der Code fuer [selectedDrink] rausgegangen ist. */
+    var orderSent by mutableStateOf(false)
+        private set
+
+    /** Der Drink, der die laufende Sperre ausgeloest hat - Text im Sperrbalken. */
+    var lockedDrink by mutableStateOf<Drink?>(null)
+        private set
+
+    /** Restliche Sperrzeit in Sekunden, 0 = nicht gesperrt. */
     var lockSecondsLeft by mutableStateOf(0)
         private set
 
@@ -70,7 +78,7 @@ class BarBotViewModel(application: Application) : AndroidViewModel(application) 
     fun goBack(): Boolean = when (screen) {
         Screen.START -> false
         Screen.CONNECT -> { screen = Screen.START; true }
-        Screen.CHOOSE -> { screen = if (connectionState == ConnectionState.CONNECTED) Screen.START else Screen.CONNECT; true }
+        Screen.CHOOSE -> { screen = Screen.CONNECT; true }
         Screen.INFO -> { screen = Screen.CHOOSE; true }
     }
 
@@ -108,23 +116,26 @@ class BarBotViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun disconnect() {
-        bluetooth.disconnect()
-        connectionState = ConnectionState.DISCONNECTED
-        screen = Screen.CONNECT
-    }
-
     // ---------------------------------------------------------------- Drinks
 
+    /** Drink aus der Liste antippen: oeffnet die Infoseite, sendet noch nichts. */
+    fun openDrink(drink: Drink) {
+        if (isLocked) return
+        selectedDrink = drink
+        orderSent = false
+        screen = Screen.INFO
+    }
+
     /**
-     * Schickt die Nummer des Drinks an den BarBot und startet die Sperrzeit.
-     * Kein Callback, keine Bestaetigung - nur senden und sperren.
+     * "Jetzt mischen": schickt die Nummer des Drinks an den BarBot und startet
+     * die Sperrzeit. Kein Callback, keine Bestaetigung - nur senden und sperren.
      */
-    fun orderDrink(drink: Drink) {
+    fun orderDrink() {
+        val drink = selectedDrink ?: return
         if (isLocked) return
 
-        lastDrink = drink
-        screen = Screen.INFO
+        orderSent = true
+        lockedDrink = drink
         startLock()
 
         viewModelScope.launch {

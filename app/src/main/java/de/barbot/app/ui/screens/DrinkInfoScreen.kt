@@ -1,128 +1,118 @@
 package de.barbot.app.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import de.barbot.app.BarBotViewModel
+import de.barbot.app.R
 import de.barbot.app.data.Drink
-import de.barbot.app.ui.components.BarBotBackdrop
-import de.barbot.app.ui.components.BarBotTopBar
-import de.barbot.app.ui.components.DrinkGlass
+import de.barbot.app.ui.components.ActionBar
+import de.barbot.app.ui.components.BackTile
+import de.barbot.app.ui.components.DrinkArt
 import de.barbot.app.ui.components.LockBar
-import de.barbot.app.ui.components.OutlineButton
-import de.barbot.app.ui.theme.BarBotMint
-import de.barbot.app.ui.theme.BarBotSurface
-import de.barbot.app.ui.theme.BarBotText
-import de.barbot.app.ui.theme.BarBotTextMuted
+import de.barbot.app.ui.components.ScreenBackground
+import de.barbot.app.ui.components.formatSeconds
+import de.barbot.app.ui.theme.BarBotType
+import de.barbot.app.ui.theme.CardWhite
+import de.barbot.app.ui.theme.DividerGrey
+import de.barbot.app.ui.theme.Ink40
+import de.barbot.app.ui.theme.Ink55
 
-/** Seite 4: Bestaetigung nach der Drink-Auswahl. Ebenfalls mit Sperrbalken. */
+/**
+ * Seite 4: Infoseite zum gewaehlten Drink.
+ *
+ * Zwei Zustaende wie im Design: vor dem Absenden mit der Leiste "Jetzt mischen",
+ * danach mit "Auftrag gesendet", gesperrter Leiste und Sperrbalken unten.
+ */
 @Composable
 fun DrinkInfoScreen(
     drink: Drink,
     lockSecondsLeft: Int,
+    ordered: Boolean,
+    deviceName: String?,
+    onOrder: () -> Unit,
     onBack: () -> Unit,
 ) {
-    BarBotBackdrop {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                BarBotTopBar(title = null, onBack = onBack)
+    val locked = lockSecondsLeft > 0
 
-                Column(
+    ScreenBackground(resId = R.drawable.bg_screen) {
+        Box(modifier = Modifier.fillMaxSize()) {
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = if (locked) 140.dp else 100.dp),
+            ) {
+                BackTile(
+                    onClick = onBack,
+                    modifier = Modifier.padding(start = 19.dp, top = 27.dp),
+                )
+
+                DrinkArt(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 28.dp)
-                        .padding(bottom = if (lockSecondsLeft > 0) 170.dp else 28.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
+                        .align(Alignment.CenterHorizontally)
+                        .size(width = 307.dp, height = 280.dp),
+                    drinkWidthFraction = 0.84f,
+                )
+
+                Spacer(Modifier.height(14.dp))
+
+                Column(modifier = Modifier.padding(horizontal = 29.dp)) {
+                    Text(text = drink.name, style = BarBotType.Hero)
+                    Spacer(Modifier.height(5.dp))
                     Text(
-                        text = "BESTELLUNG GESENDET",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = BarBotMint,
-                    )
-                    Spacer(Modifier.height(12.dp))
-                    Text(
-                        text = drink.name,
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = BarBotText,
-                        textAlign = TextAlign.Center,
-                    )
-                    Spacer(Modifier.height(6.dp))
-                    Text(
-                        text = drink.ingredients,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = BarBotTextMuted,
-                        textAlign = TextAlign.Center,
+                        text = "${drink.meta} · Code ${drink.label}",
+                        style = BarBotType.Meta,
                     )
 
                     Spacer(Modifier.height(18.dp))
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(240.dp)
-                            .clip(RoundedCornerShape(28.dp))
-                            .background(
-                                Brush.verticalGradient(
-                                    listOf(drink.color.copy(alpha = 0.22f), Color.Transparent),
-                                ),
-                            ),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        DrinkGlass(
-                            shape = drink.glass,
-                            color = drink.color,
-                            modifier = Modifier.size(190.dp),
-                        )
+                    if (ordered) {
+                        SentCard(drink = drink, deviceName = deviceName)
+                    } else {
+                        IngredientsCard(drink = drink)
                     }
+                }
+            }
 
-                    Spacer(Modifier.height(20.dp))
-
-                    InfoRow(label = "Gesendeter Code", value = drink.code.toString())
-                    Spacer(Modifier.height(10.dp))
-                    InfoRow(
-                        label = "Status",
-                        value = if (lockSecondsLeft > 0) "BarBot mixt" else "Fertig",
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(horizontal = 29.dp)
+                    .padding(bottom = if (locked) 84.dp else 50.dp),
+            ) {
+                if (locked) {
+                    ActionBar(
+                        text = "Gesperrt",
+                        trailing = formatSeconds(lockSecondsLeft),
+                        onClick = {},
+                        enabled = false,
+                        background = CardWhite.copy(alpha = 0.55f),
+                        textStyle = BarBotType.Action.copy(color = Ink40),
                     )
-
-                    Spacer(Modifier.height(20.dp))
-
-                    Text(
-                        text = "Stell dein Glas unter den Auslauf. Nach Ablauf der Zeit kannst du " +
-                            "den naechsten Drink bestellen.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = BarBotTextMuted,
-                        textAlign = TextAlign.Center,
-                    )
-
-                    Spacer(Modifier.height(20.dp))
-
-                    OutlineButton(text = "Zurueck zur Auswahl", onClick = onBack)
+                } else {
+                    ActionBar(text = "Jetzt mischen", trailing = "→", onClick = onOrder)
                 }
             }
 
             LockBar(
+                drinkName = drink.name,
                 secondsLeft = lockSecondsLeft,
                 totalSeconds = BarBotViewModel.LOCK_SECONDS,
                 modifier = Modifier.align(Alignment.BottomCenter),
@@ -132,24 +122,47 @@ fun DrinkInfoScreen(
 }
 
 @Composable
-private fun InfoRow(label: String, value: String) {
-    Row(
+private fun IngredientsCard(drink: Drink) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(BarBotSurface)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .clip(RoundedCornerShape(17.dp))
+            .background(CardWhite)
+            .padding(horizontal = 16.dp, vertical = 15.dp),
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = BarBotTextMuted,
+        Text(text = "Zutaten", style = BarBotType.SectionLabel)
+        Spacer(Modifier.height(4.dp))
+        Text(text = drink.ingredients, style = BarBotType.Body)
+        Spacer(Modifier.height(7.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(DividerGrey),
         )
+        Spacer(Modifier.height(7.dp))
         Text(
-            text = value,
-            style = MaterialTheme.typography.titleMedium,
-            color = BarBotText,
+            text = "Glas unter den Auslauf stellen · Mischzeit ca. 40 s · danach 2 min gesperrt",
+            style = BarBotType.BodySmall.copy(color = Ink55),
+        )
+    }
+}
+
+@Composable
+private fun SentCard(drink: Drink, deviceName: String?) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(17.dp))
+            .background(CardWhite)
+            .padding(16.dp),
+    ) {
+        Text(text = "Auftrag gesendet", style = BarBotType.SectionLabel)
+        Spacer(Modifier.height(7.dp))
+        Text(
+            text = "Code ${drink.label} wurde an ${deviceName ?: "den BarBot"} übertragen. " +
+                "Stelle ein Glas unter den Auslauf.",
+            style = BarBotType.Body.copy(fontSize = BarBotType.Body.fontSize),
         )
     }
 }

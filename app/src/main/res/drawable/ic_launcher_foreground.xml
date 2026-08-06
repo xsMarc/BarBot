@@ -3,11 +3,8 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Cocktailglas als App-Symbol -->
+    <!-- Cocktailglas in der Tintenfarbe des Designs -->
     <path
-        android:fillColor="#F5A524"
+        android:fillColor="#0D0D0D"
         android:pathData="M32,34h44l-19,22v18h11v5H40v-5h11V56z" />
-    <path
-        android:fillColor="#3DDC97"
-        android:pathData="M38,39h32l-6,7H44z" />
 </vector>

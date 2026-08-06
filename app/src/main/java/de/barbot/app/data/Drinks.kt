@@ -1,90 +1,61 @@
 package de.barbot.app.data
 
-import androidx.compose.ui.graphics.Color
-
 /**
  * Ein Drink, den der BarBot mixen kann.
  *
- * [code] ist die Zahl, die per Bluetooth an den Roboter geschickt wird.
- * Die Codes sind fest verdrahtet und muessen mit der Firmware des BarBots
- * uebereinstimmen.
+ * [code] ist die Zahl, die per Bluetooth an den Roboter geschickt wird. Die Codes
+ * sind fest verdrahtet und muessen mit der Firmware des BarBots uebereinstimmen.
+ * Inhalte 1:1 aus dem Design-Projekt ("BarBot App.dc.html").
  */
 data class Drink(
     val code: Int,
+    /** Zweistellige Anzeige des Codes, so wie im Design ("01"). */
+    val label: String,
     val name: String,
+    /** Vollstaendige Zutatenliste fuer die Infoseite. */
     val ingredients: String,
-    val alcoholic: Boolean,
-    val glass: GlassShape,
-    val color: Color,
+    /** Kurzform fuer die Auswahlliste. */
+    val ingredientsShort: String,
+    /** "250 ml · 10,5 % vol" */
+    val meta: String,
 )
 
-enum class GlassShape { HIGHBALL, COCKTAIL, TUMBLER }
-
-/** Alle verfuegbaren Drinks. Reihenfolge = Reihenfolge auf der Auswahlseite. */
 val DRINKS: List<Drink> = listOf(
     Drink(
-        code = 1,
-        name = "Mojito",
-        ingredients = "Rum · Limette · Minze · Soda",
-        alcoholic = true,
-        glass = GlassShape.HIGHBALL,
-        color = Color(0xFF4CD68A),
+        code = 1, label = "01", name = "Mojito",
+        ingredients = "Weißer Rum 5 cl · Limettensaft 3 cl · Rohrzuckersirup 2 cl · Minze · Soda",
+        ingredientsShort = "Rum, Limette, Minze, Soda",
+        meta = "250 ml · 10,5 % vol",
     ),
     Drink(
-        code = 2,
-        name = "Cuba Libre",
-        ingredients = "Rum · Cola · Limette",
-        alcoholic = true,
-        glass = GlassShape.HIGHBALL,
-        color = Color(0xFF9A5B36),
+        code = 2, label = "02", name = "Caipirinha",
+        ingredients = "Cachaça 5 cl · Limette 4 cl · Rohrzucker · Crushed Ice",
+        ingredientsShort = "Cachaça, Limette, Zucker",
+        meta = "220 ml · 14 % vol",
     ),
     Drink(
-        code = 3,
-        name = "Gin Tonic",
-        ingredients = "Gin · Tonic Water · Limette",
-        alcoholic = true,
-        glass = GlassShape.HIGHBALL,
-        color = Color(0xFF7FC4E8),
+        code = 3, label = "03", name = "Gin Tonic",
+        ingredients = "Gin 5 cl · Tonic Water 15 cl · Limette · Eis",
+        ingredientsShort = "Gin, Tonic, Limette",
+        meta = "300 ml · 8 % vol",
     ),
     Drink(
-        code = 4,
-        name = "Tequila Sunrise",
-        ingredients = "Tequila · Orange · Grenadine",
-        alcoholic = true,
-        glass = GlassShape.HIGHBALL,
-        color = Color(0xFFF97C41),
+        code = 4, label = "04", name = "Cuba Libre",
+        ingredients = "Brauner Rum 5 cl · Cola 15 cl · Limette · Eis",
+        ingredientsShort = "Rum, Cola, Limette",
+        meta = "280 ml · 9 % vol",
     ),
     Drink(
-        code = 5,
-        name = "Sex on the Beach",
-        ingredients = "Wodka · Pfirsich · Orange · Cranberry",
-        alcoholic = true,
-        glass = GlassShape.HIGHBALL,
-        color = Color(0xFFF4557E),
+        code = 5, label = "05", name = "Tequila Sunrise",
+        ingredients = "Tequila 4 cl · Orangensaft 12 cl · Grenadine · Eis",
+        ingredientsShort = "Tequila, O-Saft, Grenadine",
+        meta = "260 ml · 11 % vol",
     ),
     Drink(
-        code = 6,
-        name = "Wodka Lemon",
-        ingredients = "Wodka · Bitter Lemon",
-        alcoholic = true,
-        glass = GlassShape.HIGHBALL,
-        color = Color(0xFFE7D45C),
-    ),
-    Drink(
-        code = 7,
-        name = "Caipirinha",
-        ingredients = "Cachaça · Limette · Rohrzucker",
-        alcoholic = true,
-        glass = GlassShape.TUMBLER,
-        color = Color(0xFF8FD14F),
-    ),
-    Drink(
-        code = 8,
-        name = "Ipanema",
-        ingredients = "Limette · Ginger Ale · Maracuja",
-        alcoholic = false,
-        glass = GlassShape.TUMBLER,
-        color = Color(0xFFFFC24B),
+        code = 6, label = "06", name = "Virgin Colada",
+        ingredients = "Ananassaft 12 cl · Kokossirup 3 cl · Sahne · Crushed Ice",
+        ingredientsShort = "Ananas, Kokos, Sahne",
+        meta = "250 ml · 0 % vol",
     ),
 )
 

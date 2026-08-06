@@ -19,8 +19,8 @@ import de.barbot.app.ui.screens.ChooseScreen
 import de.barbot.app.ui.screens.ConnectScreen
 import de.barbot.app.ui.screens.DrinkInfoScreen
 import de.barbot.app.ui.screens.StartScreen
-import de.barbot.app.ui.theme.BarBotBackground
 import de.barbot.app.ui.theme.BarBotTheme
+import de.barbot.app.ui.theme.CardWhite
 
 class MainActivity : ComponentActivity() {
 
@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
             BarBotTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = BarBotBackground,
+                    color = CardWhite,
                 ) {
                     BarBotApp(onExit = { finish() })
                 }
@@ -69,17 +69,16 @@ fun BarBotApp(onExit: () -> Unit) {
                 onRefresh = viewModel::refreshDevices,
                 onSelect = viewModel::selectDevice,
                 onConnect = viewModel::connect,
-                onBack = { viewModel.goBack() },
             )
 
             Screen.CHOOSE -> ChooseScreen(
+                lockedDrinkName = viewModel.lockedDrink?.name,
                 lockSecondsLeft = viewModel.lockSecondsLeft,
-                onDrinkSelected = viewModel::orderDrink,
-                onBack = { viewModel.goBack() },
+                onDrinkSelected = viewModel::openDrink,
             )
 
             Screen.INFO -> {
-                val drink = viewModel.lastDrink
+                val drink = viewModel.selectedDrink
                 if (drink == null) {
                     // Sollte nicht passieren - zur Sicherheit zurueck zur Auswahl.
                     LaunchedEffect(Unit) { viewModel.goTo(Screen.CHOOSE) }
@@ -87,6 +86,9 @@ fun BarBotApp(onExit: () -> Unit) {
                     DrinkInfoScreen(
                         drink = drink,
                         lockSecondsLeft = viewModel.lockSecondsLeft,
+                        ordered = viewModel.orderSent,
+                        deviceName = viewModel.selectedDevice?.name,
+                        onOrder = viewModel::orderDrink,
                         onBack = { viewModel.goBack() },
                     )
                 }

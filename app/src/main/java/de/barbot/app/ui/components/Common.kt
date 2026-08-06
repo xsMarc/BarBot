@@ -5,165 +5,147 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import de.barbot.app.R
-import de.barbot.app.ui.theme.BarBotAmber
-import de.barbot.app.ui.theme.BarBotBackground
-import de.barbot.app.ui.theme.BarBotOutline
-import de.barbot.app.ui.theme.BarBotSurface
-import de.barbot.app.ui.theme.BarBotSurfaceElevated
-import de.barbot.app.ui.theme.BarBotText
-import de.barbot.app.ui.theme.BarBotTextMuted
+import de.barbot.app.ui.theme.BarBotType
+import de.barbot.app.ui.theme.CardWhite
+import de.barbot.app.ui.theme.FieldSoft
+import de.barbot.app.ui.theme.Ink
+import de.barbot.app.ui.theme.Ink45
+import de.barbot.app.ui.theme.Lime
+import de.barbot.app.ui.theme.TrackGrey
 
-/** Dunkler Hintergrund mit warmem Lichtkegel oben - der Look der ganzen App. */
+/**
+ * Bildschirmfuellender Hintergrund aus dem Design.
+ * Das Design nutzt "center/cover", entspricht [ContentScale.Crop].
+ */
 @Composable
-fun BarBotBackdrop(content: @Composable () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BarBotBackground)
-            .background(
-                Brush.radialGradient(
-                    colors = listOf(BarBotAmber.copy(alpha = 0.16f), Color.Transparent),
-                    radius = 900f,
-                ),
-            ),
-    ) {
+fun ScreenBackground(
+    resId: Int,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Box(modifier = modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(resId),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize(),
+        )
         content()
     }
 }
 
-/** Zurueck-Pfeil oben links, optional mit Titel daneben. */
+/**
+ * Das Drink-Bild vor seinem runden Schein - im Design die Kombination aus
+ * Bg_Drink.png (contain) und dem freigestellten Drink darueber.
+ *
+ * [drinkWidthFraction] entspricht der Breitenangabe im Design (84 % bzw. 74 %).
+ */
 @Composable
-fun BarBotTopBar(
-    title: String? = null,
-    onBack: (() -> Unit)? = null,
-    trailing: @Composable (() -> Unit)? = null,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        if (onBack != null) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(BarBotSurface)
-                    .clickable(onClick = onBack),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_back_arrow),
-                    contentDescription = "Zurueck",
-                    tint = BarBotText,
-                    modifier = Modifier.size(20.dp),
-                )
-            }
-            Spacer(Modifier.width(14.dp))
-        }
-        if (title != null) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.headlineSmall,
-                color = BarBotText,
-                modifier = Modifier.weight(1f),
-            )
-        } else {
-            Spacer(Modifier.weight(1f))
-        }
-        trailing?.invoke()
-    }
-}
-
-/** Grosse, gut treffbare Hauptaktion. */
-@Composable
-fun PrimaryButton(
-    text: String,
-    onClick: () -> Unit,
+fun DrinkArt(
     modifier: Modifier = Modifier,
-    enabled: Boolean = true,
+    drinkWidthFraction: Float = 0.84f,
 ) {
-    val alpha = if (enabled) 1f else 0.35f
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(58.dp)
-            .clip(RoundedCornerShape(18.dp))
-            .background(BarBotAmber.copy(alpha = alpha))
-            .clickable(enabled = enabled, onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge,
-            color = Color(0xFF231703).copy(alpha = if (enabled) 1f else 0.6f),
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        Image(
+            painter = painterResource(R.drawable.bg_drink),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.fillMaxSize(),
+        )
+        Image(
+            painter = painterResource(R.drawable.drink_mojito),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .fillMaxWidth(drinkWidthFraction)
+                .fillMaxHeight(),
         )
     }
 }
 
-/** Sekundaere Aktion: nur Umrandung. */
+/** Weisse Zurueck-Kachel oben links (158x158 px, Radius 34 px im Design). */
 @Composable
-fun OutlineButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-) {
-    val alpha = if (enabled) 1f else 0.4f
+fun BackTile(onClick: () -> Unit, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
-            .fillMaxWidth()
-            .height(52.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(BarBotSurfaceElevated.copy(alpha = alpha))
-            .clickable(enabled = enabled, onClick = onClick),
+            .size(52.dp)
+            .clip(RoundedCornerShape(11.dp))
+            .background(CardWhite)
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge,
-            color = BarBotText.copy(alpha = alpha),
+        Image(
+            painter = painterResource(R.drawable.ic_back_arrow),
+            contentDescription = "Zurueck",
+            modifier = Modifier.height(25.dp),
         )
     }
 }
 
 /**
- * Der dauerhafte Balken am unteren Bildschirmrand: laesst die 2 Minuten
- * Sperrzeit ablaufen. Wird auf der Auswahl- und der Info-Seite gezeigt,
- * solange [secondsLeft] groesser als 0 ist.
+ * Die weisse Aktionsleiste am unteren Rand: links Text, rechts ein Zeichen.
+ * Im Design 904x150 px mit Radius 34 px.
+ */
+@Composable
+fun ActionBar(
+    text: String,
+    trailing: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    background: androidx.compose.ui.graphics.Color = CardWhite,
+    textStyle: TextStyle = BarBotType.Action,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(50.dp)
+            .clip(RoundedCornerShape(11.dp))
+            .background(background)
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(horizontal = 19.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(text = text, style = textStyle)
+        Text(text = trailing, style = textStyle)
+    }
+}
+
+/**
+ * Der dauerhafte Sperrbalken am unteren Bildschirmrand (210 px hoch im Design):
+ * oben ein 16 px hoher Fortschrittsstreifen, darunter Drinkname und Restzeit.
+ *
+ * Wie im Design fuellt sich der Streifen mit der abgelaufenen Zeit.
  */
 @Composable
 fun LockBar(
+    drinkName: String,
     secondsLeft: Int,
     totalSeconds: Int,
     modifier: Modifier = Modifier,
@@ -174,70 +156,53 @@ fun LockBar(
         exit = slideOutVertically(targetOffsetY = { it }),
         modifier = modifier,
     ) {
+        val elapsed = if (totalSeconds > 0) 1f - secondsLeft.toFloat() / totalSeconds else 0f
         val progress by animateFloatAsState(
-            targetValue = if (totalSeconds > 0) secondsLeft.toFloat() / totalSeconds else 0f,
-            animationSpec = tween(durationMillis = 300),
+            targetValue = elapsed.coerceIn(0f, 1f),
+            animationSpec = tween(durationMillis = 400),
             label = "lockProgress",
         )
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        listOf(Color.Transparent, BarBotBackground.copy(alpha = 0.95f)),
-                    ),
-                )
-                .padding(horizontal = 20.dp)
-                .padding(top = 20.dp, bottom = 24.dp),
+                .height(70.dp)
+                .background(FieldSoft),
         ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(5.dp)
+                    .background(TrackGrey),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(progress)
+                        .height(5.dp)
+                        .background(Lime),
+                )
+            }
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "BarBot ist beschaeftigt",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = BarBotText,
+                    text = "$drinkName wird gemischt…",
+                    style = BarBotType.Strong.copy(color = Ink),
                 )
                 Text(
-                    text = formatSeconds(secondsLeft),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = BarBotAmber,
+                    text = "noch ${formatSeconds(secondsLeft)}",
+                    style = BarBotType.Strong.copy(color = Ink45),
                 )
             }
-            Spacer(Modifier.height(10.dp))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(10.dp)
-                    .clip(CircleShape)
-                    .background(BarBotOutline),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(progress.coerceIn(0f, 1f))
-                        .height(10.dp)
-                        .clip(CircleShape)
-                        .background(
-                            Brush.horizontalGradient(
-                                listOf(BarBotAmber, BarBotAmber.copy(alpha = 0.6f)),
-                            ),
-                        ),
-                )
-            }
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = "Solange kann kein weiterer Drink bestellt werden.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = BarBotTextMuted,
-                textAlign = TextAlign.Start,
-            )
         }
     }
 }
 
+/** Sekunden als "m:ss". */
 fun formatSeconds(seconds: Int): String {
     val safe = seconds.coerceAtLeast(0)
     return "%d:%02d".format(safe / 60, safe % 60)

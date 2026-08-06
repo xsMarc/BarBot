@@ -5,7 +5,6 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,11 +16,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,24 +30,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import de.barbot.app.ConnectionState
+import de.barbot.app.R
 import de.barbot.app.bluetooth.PairedDevice
-import de.barbot.app.ui.components.BarBotBackdrop
-import de.barbot.app.ui.components.BarBotTopBar
-import de.barbot.app.ui.components.OutlineButton
-import de.barbot.app.ui.components.PrimaryButton
-import de.barbot.app.ui.theme.BarBotAmber
-import de.barbot.app.ui.theme.BarBotError
-import de.barbot.app.ui.theme.BarBotMint
-import de.barbot.app.ui.theme.BarBotOutline
-import de.barbot.app.ui.theme.BarBotSurface
-import de.barbot.app.ui.theme.BarBotSurfaceElevated
-import de.barbot.app.ui.theme.BarBotText
-import de.barbot.app.ui.theme.BarBotTextMuted
+import de.barbot.app.ui.components.ActionBar
+import de.barbot.app.ui.components.ScreenBackground
+import de.barbot.app.ui.theme.BadgeGrey
+import de.barbot.app.ui.theme.BarBotType
+import de.barbot.app.ui.theme.CardWhite
+import de.barbot.app.ui.theme.Field
+import de.barbot.app.ui.theme.FieldDim
+import de.barbot.app.ui.theme.Ink
+import de.barbot.app.ui.theme.Ink45
+import de.barbot.app.ui.theme.Ink50
+import de.barbot.app.ui.theme.Lime
 
-/** Seite 2: Bluetooth-Verbindung zum BarBot herstellen. */
+/**
+ * Seite 2: Mit dem BarBot verbinden.
+ *
+ * Design: Titel oben links, darunter eine weisse Karte mit den gefundenen
+ * Geraeten, unten die Statuszeile und die Leiste "Erneut suchen".
+ */
 @Composable
 fun ConnectScreen(
     devices: List<PairedDevice>,
@@ -61,7 +66,6 @@ fun ConnectScreen(
     onRefresh: () -> Unit,
     onSelect: (PairedDevice) -> Unit,
     onConnect: () -> Unit,
-    onBack: () -> Unit,
 ) {
     var permissionGranted by remember { mutableStateOf(hasPermission()) }
 
@@ -80,182 +84,216 @@ fun ConnectScreen(
         }
     }
 
-    BarBotBackdrop {
-        Column(modifier = Modifier.fillMaxSize()) {
-            BarBotTopBar(title = "Verbinden", onBack = onBack)
+    ScreenBackground(resId = R.drawable.bg_screen) {
+        Box(modifier = Modifier.fillMaxSize()) {
 
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 29.dp)
+                    .padding(top = 32.dp, bottom = 120.dp),
             ) {
-                StatusCard(connectionState = connectionState, deviceName = selectedDevice?.name)
+                Text(text = "Mit BarBot\nverbinden", style = BarBotType.Display)
 
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(38.dp))
 
-                Text(
-                    text = "GEKOPPELTE GERAETE",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = BarBotTextMuted,
-                )
-                Spacer(Modifier.height(10.dp))
-            }
-
-            val hint = when {
-                !bluetoothSupported -> "Dieses Geraet hat kein Bluetooth."
-                !permissionGranted -> "Die App braucht die Bluetooth-Berechtigung, um den BarBot zu finden."
-                !bluetoothEnabled -> "Bluetooth ist ausgeschaltet. Bitte in den Systemeinstellungen einschalten."
-                devices.isEmpty() -> "Keine gekoppelten Geraete gefunden. Koppel den BarBot zuerst in den Bluetooth-Einstellungen deines Handys."
-                else -> null
-            }
-
-            Box(modifier = Modifier.weight(1f)) {
-                if (hint != null) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp),
-                    ) {
-                        Text(
-                            text = hint,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = BarBotTextMuted,
-                        )
-                        if (!permissionGranted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            Spacer(Modifier.height(16.dp))
-                            OutlineButton(
-                                text = "Berechtigung erteilen",
-                                onClick = { permissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT) },
-                            )
+                DeviceCard(
+                    devices = devices,
+                    selectedDevice = selectedDevice,
+                    connectionState = connectionState,
+                    hint = statusHint(
+                        bluetoothSupported = bluetoothSupported,
+                        permissionGranted = permissionGranted,
+                        bluetoothEnabled = bluetoothEnabled,
+                        deviceCount = devices.size,
+                    ),
+                    errorMessage = errorMessage,
+                    onSelect = onSelect,
+                    onConnect = onConnect,
+                    onRequestPermission = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            permissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
                         }
-                    }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                            start = 20.dp,
-                            end = 20.dp,
-                            bottom = 12.dp,
-                        ),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        items(devices, key = { it.address }) { device ->
-                            DeviceRow(
-                                device = device,
-                                selected = device.address == selectedDevice?.address,
-                                onClick = { onSelect(device) },
-                            )
-                        }
-                    }
-                }
+                    },
+                    showPermissionButton = !permissionGranted &&
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
+                )
             }
 
-            Column(modifier = Modifier.padding(20.dp)) {
-                if (errorMessage != null) {
-                    Text(
-                        text = errorMessage,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = BarBotError,
-                    )
-                    Spacer(Modifier.height(12.dp))
-                }
-                OutlineButton(text = "Liste aktualisieren", onClick = onRefresh)
-                Spacer(Modifier.height(12.dp))
-                PrimaryButton(
-                    text = if (connectionState == ConnectionState.CONNECTING) "VERBINDE ..." else "VERBINDEN",
-                    onClick = onConnect,
-                    enabled = selectedDevice != null && connectionState != ConnectionState.CONNECTING,
-                )
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(horizontal = 29.dp)
+                    .padding(bottom = 50.dp),
+            ) {
+                StatusLine(connectionState = connectionState, bluetoothEnabled = bluetoothEnabled)
+                Spacer(Modifier.height(18.dp))
+                ActionBar(text = "Erneut suchen", trailing = "↻", onClick = onRefresh)
             }
         }
     }
+}
+
+private fun statusHint(
+    bluetoothSupported: Boolean,
+    permissionGranted: Boolean,
+    bluetoothEnabled: Boolean,
+    deviceCount: Int,
+): String? = when {
+    !bluetoothSupported -> "Dieses Geraet hat kein Bluetooth."
+    !permissionGranted -> "Die App braucht die Bluetooth-Berechtigung, um den BarBot zu finden."
+    !bluetoothEnabled -> "Bluetooth ist aus. Bitte in den Systemeinstellungen einschalten."
+    deviceCount == 0 -> "Keine gekoppelten Geraete. Koppel den BarBot zuerst in den " +
+        "Bluetooth-Einstellungen deines Handys."
+    else -> null
 }
 
 @Composable
-private fun StatusCard(connectionState: ConnectionState, deviceName: String?) {
-    val (dotColor, label) = when (connectionState) {
-        ConnectionState.CONNECTED -> BarBotMint to "Verbunden"
-        ConnectionState.CONNECTING -> BarBotAmber to "Verbinde ..."
-        ConnectionState.DISCONNECTED -> BarBotTextMuted to "Nicht verbunden"
-    }
-
-    Row(
+private fun DeviceCard(
+    devices: List<PairedDevice>,
+    selectedDevice: PairedDevice?,
+    connectionState: ConnectionState,
+    hint: String?,
+    errorMessage: String?,
+    onSelect: (PairedDevice) -> Unit,
+    onConnect: () -> Unit,
+    onRequestPermission: () -> Unit,
+    showPermissionButton: Boolean,
+) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(BarBotSurface)
-            .padding(18.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .clip(RoundedCornerShape(17.dp))
+            .background(CardWhite)
+            .padding(horizontal = 19.dp, vertical = 21.dp),
+        verticalArrangement = Arrangement.spacedBy(11.dp),
     ) {
-        Box(
-            modifier = Modifier
-                .size(12.dp)
-                .clip(CircleShape)
-                .background(dotColor),
-        )
-        Spacer(Modifier.size(14.dp))
-        Column {
+        Text(text = "Gefundene Geräte", style = BarBotType.SectionLabel)
+
+        if (hint != null) {
+            Text(text = hint, style = BarBotType.BodySmall)
+            if (showPermissionButton) {
+                Spacer(Modifier.height(4.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Lime)
+                        .clickable(onClick = onRequestPermission)
+                        .padding(horizontal = 13.dp, vertical = 9.dp),
+                ) {
+                    Text(text = "Berechtigung erteilen", style = BarBotType.Pill)
+                }
+            }
+        } else {
+            devices.forEach { device ->
+                DeviceRow(
+                    device = device,
+                    selected = device.address == selectedDevice?.address,
+                    connectionState = connectionState,
+                    onSelect = { onSelect(device) },
+                    onConnect = onConnect,
+                )
+            }
+        }
+
+        if (errorMessage != null) {
             Text(
-                text = label,
-                style = MaterialTheme.typography.titleMedium,
-                color = BarBotText,
-            )
-            Text(
-                text = deviceName ?: "Waehle den BarBot aus der Liste",
-                style = MaterialTheme.typography.bodyMedium,
-                color = BarBotTextMuted,
+                text = errorMessage,
+                style = BarBotType.BodySmall.copy(color = Ink50),
             )
         }
     }
 }
 
+/**
+ * Eine Zeile der Geraeteliste: BT-Kachel, Name mit Status, "Verbinden"-Pille.
+ * Ausgewaehlte Zeilen bekommen die limettengruene Kachel wie im Design.
+ */
 @Composable
 private fun DeviceRow(
     device: PairedDevice,
     selected: Boolean,
-    onClick: () -> Unit,
+    connectionState: ConnectionState,
+    onSelect: () -> Unit,
+    onConnect: () -> Unit,
 ) {
+    val connected = selected && connectionState == ConnectionState.CONNECTED
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(if (selected) BarBotSurfaceElevated else BarBotSurface)
-            .border(
-                width = if (selected) 2.dp else 1.dp,
-                color = if (selected) BarBotAmber else BarBotOutline,
-                shape = RoundedCornerShape(16.dp),
-            )
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .clip(RoundedCornerShape(11.dp))
+            .background(Field)
+            .clickable(onClick = onSelect)
+            .padding(horizontal = 12.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(9.dp),
     ) {
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(RoundedCornerShape(9.dp))
+                .background(if (selected) Lime else BadgeGrey),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = "BT",
+                style = BarBotType.Badge.copy(color = if (selected) Ink else Ink45),
+            )
+        }
+
         Column(modifier = Modifier.weight(1f)) {
+            Text(text = device.name, style = BarBotType.Strong)
+            Spacer(Modifier.height(2.dp))
             Text(
-                text = device.name,
-                style = MaterialTheme.typography.titleMedium,
-                color = BarBotText,
-            )
-            Text(
-                text = device.address,
-                style = MaterialTheme.typography.bodyMedium,
-                color = BarBotTextMuted,
+                text = when {
+                    connected -> "Verbunden"
+                    selected && connectionState == ConnectionState.CONNECTING -> "Verbinde …"
+                    else -> "Gekoppelt"
+                },
+                style = BarBotType.BodySmall.copy(color = Ink50),
             )
         }
-        if (selected) {
-            Box(
-                modifier = Modifier
-                    .size(20.dp)
-                    .clip(CircleShape)
-                    .background(BarBotAmber),
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .size(20.dp)
-                    .clip(CircleShape)
-                    .border(2.dp, BarBotOutline, CircleShape)
-                    .height(20.dp),
+
+        Box(
+            modifier = Modifier
+                .height(31.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(if (selected) Lime else FieldDim)
+                .clickable(enabled = connectionState != ConnectionState.CONNECTING) {
+                    onSelect()
+                    onConnect()
+                }
+                .padding(horizontal = 13.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = if (connected) "Verbunden" else "Verbinden",
+                style = BarBotType.Pill,
             )
         }
+    }
+}
+
+/** Punkt plus Text, im Design 1360 px von oben. */
+@Composable
+private fun StatusLine(connectionState: ConnectionState, bluetoothEnabled: Boolean) {
+    val text = when {
+        connectionState == ConnectionState.CONNECTED -> "Verbunden · bereit zum Mixen"
+        connectionState == ConnectionState.CONNECTING -> "Verbindung wird aufgebaut …"
+        !bluetoothEnabled -> "Bluetooth aus"
+        else -> "Bluetooth aktiv · Suche läuft"
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(7.dp)
+                .clip(CircleShape)
+                .background(Ink)
+                .alpha(if (bluetoothEnabled) 1f else 0.4f),
+        )
+        Spacer(Modifier.width(5.dp))
+        Text(text = text, style = BarBotType.Status)
     }
 }
