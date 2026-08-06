@@ -15,3 +15,6 @@ local.properties
 # macOS AppleDouble-Reste auf exFAT/NTFS
 ._*
 .DS_Store
+
+# lokal gebaute APKs
+/dist/
