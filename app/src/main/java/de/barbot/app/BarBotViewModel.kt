@@ -58,6 +58,10 @@ class BarBotViewModel(application: Application) : AndroidViewModel(application) 
     val isLocked: Boolean
         get() = lockSecondsLeft > 0
 
+    /** Steht ein Socket zum BarBot? Steuert den dauerhaften Offline-Hinweis. */
+    val isConnected: Boolean
+        get() = connectionState == ConnectionState.CONNECTED
+
     val isBluetoothSupported: Boolean
         get() = bluetooth.isBluetoothSupported
 
@@ -114,6 +118,16 @@ class BarBotViewModel(application: Application) : AndroidViewModel(application) 
                     ?: "Verbindung zum BarBot fehlgeschlagen"
             }
         }
+    }
+
+    /**
+     * "Ohne Verbindung fortfahren": weiter zur Auswahl, ohne dass ein Socket steht.
+     * Die App bleibt voll bedienbar, das Senden laeuft dann aber ins Leere - darauf
+     * weist der Offline-Hinweis auf den Folgeseiten hin.
+     */
+    fun continueWithoutConnection() {
+        connectionError = null
+        screen = Screen.CHOOSE
     }
 
     // ---------------------------------------------------------------- Drinks

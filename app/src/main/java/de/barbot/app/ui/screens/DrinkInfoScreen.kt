@@ -44,6 +44,7 @@ fun DrinkInfoScreen(
     drink: Drink,
     lockSecondsLeft: Int,
     ordered: Boolean,
+    connected: Boolean,
     deviceName: String?,
     onOrder: () -> Unit,
     onBack: () -> Unit,
@@ -84,7 +85,7 @@ fun DrinkInfoScreen(
                     Spacer(Modifier.height(18.dp))
 
                     if (ordered) {
-                        SentCard(drink = drink, deviceName = deviceName)
+                        SentCard(drink = drink, deviceName = deviceName, connected = connected)
                     } else {
                         IngredientsCard(drink = drink)
                     }
@@ -149,7 +150,7 @@ private fun IngredientsCard(drink: Drink) {
 }
 
 @Composable
-private fun SentCard(drink: Drink, deviceName: String?) {
+private fun SentCard(drink: Drink, deviceName: String?, connected: Boolean) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -157,11 +158,19 @@ private fun SentCard(drink: Drink, deviceName: String?) {
             .background(CardWhite)
             .padding(16.dp),
     ) {
-        Text(text = "Auftrag gesendet", style = BarBotType.SectionLabel)
+        Text(
+            text = if (connected) "Auftrag gesendet" else "Nicht übertragen",
+            style = BarBotType.SectionLabel,
+        )
         Spacer(Modifier.height(7.dp))
         Text(
-            text = "Code ${drink.label} wurde an ${deviceName ?: "den BarBot"} übertragen. " +
-                "Stelle ein Glas unter den Auslauf.",
+            text = if (connected) {
+                "Code ${drink.label} wurde an ${deviceName ?: "den BarBot"} übertragen. " +
+                    "Stelle ein Glas unter den Auslauf."
+            } else {
+                "Ohne Verbindung zum BarBot ging Code ${drink.label} nicht raus. " +
+                    "Die Sperrzeit läuft trotzdem."
+            },
             style = BarBotType.Body.copy(fontSize = BarBotType.Body.fontSize),
         )
     }

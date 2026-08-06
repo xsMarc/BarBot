@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +30,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import de.barbot.app.R
 import de.barbot.app.ui.theme.BarBotType
 import de.barbot.app.ui.theme.CardWhite
@@ -198,6 +200,40 @@ fun LockBar(
                     style = BarBotType.Strong.copy(color = Ink45),
                 )
             }
+        }
+    }
+}
+
+/**
+ * Dauerhafter Hinweis auf allen Seiten nach dem Bluetooth-Screen, solange keine
+ * Verbindung zum BarBot steht - also nach "Ohne Verbindung fortfahren" oder wenn
+ * die Verbindung zwischendurch abreisst.
+ */
+@Composable
+fun OfflineNotice(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Ink)
+            .padding(horizontal = 19.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(7.dp)
+                .clip(CircleShape)
+                .background(CardWhite.copy(alpha = 0.45f)),
+        )
+        Column {
+            Text(
+                text = "Nicht mit dem BarBot verbunden",
+                style = BarBotType.Strong.copy(color = CardWhite, fontSize = 11.5.sp),
+            )
+            Text(
+                text = "Bestellungen werden nicht an den Roboter übertragen.",
+                style = BarBotType.BodySmall.copy(color = CardWhite.copy(alpha = 0.62f)),
+            )
         }
     }
 }

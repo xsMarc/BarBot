@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import de.barbot.app.ConnectionState
 import de.barbot.app.R
@@ -66,6 +67,7 @@ fun ConnectScreen(
     onRefresh: () -> Unit,
     onSelect: (PairedDevice) -> Unit,
     onConnect: () -> Unit,
+    onContinueWithoutConnection: () -> Unit,
 ) {
     var permissionGranted by remember { mutableStateOf(hasPermission()) }
 
@@ -130,6 +132,16 @@ fun ConnectScreen(
                 StatusLine(connectionState = connectionState, bluetoothEnabled = bluetoothEnabled)
                 Spacer(Modifier.height(18.dp))
                 ActionBar(text = "Erneut suchen", trailing = "↻", onClick = onRefresh)
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    text = "Ohne Verbindung fortfahren",
+                    style = BarBotType.Status.copy(textDecoration = TextDecoration.Underline),
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .clip(RoundedCornerShape(6.dp))
+                        .clickable(onClick = onContinueWithoutConnection)
+                        .padding(horizontal = 10.dp, vertical = 7.dp),
+                )
             }
         }
     }
