@@ -4,11 +4,6 @@ Android-App (Kotlin + Jetpack Compose) fuer den BarBot-Mixroboter. Die App
 verbindet sich per Bluetooth mit dem Roboter und schickt beim Bestellen eines
 Drinks genau eine Zahl. Danach ist die Bestellung 2 Minuten gesperrt.
 
-Das UI folgt dem Claude-Design-Projekt "BarBot App.dc.html": Limette `#C5FF5C`
-auf Weiss, Montserrat in kursivem Extrabold, weisse Karten mit grossen Radien.
-Das Design ist 1080 px breit gezeichnet, das entspricht 360 dp - alle Groessen
-im Code sind die Canvas-Werte geteilt durch 3.
-
 ## Aufbau
 
 Vier Seiten, umgeschaltet ueber `Screen` im `BarBotViewModel`:
