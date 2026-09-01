@@ -1,5 +1,6 @@
 package de.barbot.app
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -57,6 +58,17 @@ class MainActivity : ComponentActivity() {
             ),
         )
         super.onCreate(savedInstanceState)
+
+        // Querformat nur dort, wo Platz dafuer ist. Der Wert kommt aus
+        // res/values/bools.xml und wird ab 600 dp kleinster Breite von
+        // res/values-sw600dp/ ueberschrieben - also auf Tablets und
+        // aufgeklappten Foldables, nicht auf Telefonen.
+        requestedOrientation = if (resources.getBoolean(R.bool.allow_landscape)) {
+            ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        } else {
+            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
+
         setContent {
             BarBotTheme {
                 Surface(

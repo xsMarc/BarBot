@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Telefone bleiben im Hochformat: der Entwurf ist hochkant gezeichnet und
+        wirkt quer gestaucht. Auf Geraeten ab 600 dp kleinster Breite (Tablets,
+        aufgeklappte Foldables) wird der Wert ueberschrieben.
+    -->
+    <bool name="allow_landscape">false</bool>
+</resources>
