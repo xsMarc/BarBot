@@ -164,7 +164,9 @@ fun BarBotApp(onExit: () -> Unit) {
             // nach oben, statt ihn zu ueberdecken.
             if (afterConnectScreen) {
                 LockBar(
-                    drinkName = viewModel.lockedDrink?.name.orEmpty(),
+                    // Nach einem Neustart kann das Getraenk fehlen, wenn sein
+                    // Code inzwischen aus der Konfiguration verschwunden ist.
+                    drinkName = viewModel.lockedDrink?.name ?: "Dein Drink",
                     secondsLeft = viewModel.lockSecondsLeft,
                     totalSeconds = BarBotViewModel.LOCK_SECONDS,
                 )

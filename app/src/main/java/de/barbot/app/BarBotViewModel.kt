@@ -10,6 +10,8 @@ import androidx.lifecycle.viewModelScope
 import de.barbot.app.bluetooth.BarBotBluetooth
 import de.barbot.app.bluetooth.PairedDevice
 import de.barbot.app.data.Drink
+import de.barbot.app.data.LockStore
+import de.barbot.app.data.drinkByCode
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -22,6 +24,7 @@ enum class ConnectionState { DISCONNECTED, CONNECTING, CONNECTED }
 class BarBotViewModel(application: Application) : AndroidViewModel(application) {
 
     private val bluetooth = BarBotBluetooth(application)
+    private val lockStore = LockStore(application)
 
     var screen by mutableStateOf(Screen.START)
         private set
@@ -69,6 +72,24 @@ class BarBotViewModel(application: Application) : AndroidViewModel(application) 
         get() = bluetooth.isBluetoothEnabled
 
     private var lockJob: Job? = null
+
+    init {
+        restoreLock()
+    }
+
+    /**
+     * Holt eine noch laufende Sperre aus dem Speicher zurueck. Ohne das liesse
+     * sie sich umgehen, indem man die App wegwischt und neu oeffnet.
+     */
+    private fun restoreLock() {
+        val remaining = lockStore.remainingMillis(LOCK_MILLIS)
+        if (remaining <= 0L) {
+            lockStore.clear()
+            return
+        }
+        lockedDrink = lockStore.lockedDrinkCode()?.let(::drinkByCode)
+        startLock(remaining)
+    }
 
     fun hasConnectPermission(): Boolean = bluetooth.hasConnectPermission()
 
@@ -150,24 +171,29 @@ class BarBotViewModel(application: Application) : AndroidViewModel(application) 
 
         orderSent = true
         lockedDrink = drink
-        startLock()
+        // Erst festschreiben, dann senden: die Sperre gilt auch dann, wenn die
+        // App direkt danach weggewischt wird.
+        lockStore.save(drink.code, LOCK_MILLIS)
+        startLock(LOCK_MILLIS)
 
         viewModelScope.launch {
             bluetooth.sendNumber(drink.code)
         }
     }
 
-    private fun startLock() {
+    private fun startLock(millis: Long) {
         lockJob?.cancel()
-        val endsAt = SystemClock.elapsedRealtime() + LOCK_MILLIS
+        val endsAt = SystemClock.elapsedRealtime() + millis
+        // Aufrunden, damit die Anzeige bei 2:00 startet und erst bei 0 verschwindet.
+        lockSecondsLeft = ((millis + 999) / 1000).toInt()
         lockJob = viewModelScope.launch {
             while (true) {
                 val remaining = endsAt - SystemClock.elapsedRealtime()
                 if (remaining <= 0) {
                     lockSecondsLeft = 0
+                    lockStore.clear()
                     break
                 }
-                // Aufrunden, damit die Anzeige bei 2:00 startet und erst bei 0 verschwindet.
                 lockSecondsLeft = ((remaining + 999) / 1000).toInt()
                 delay(250)
             }
