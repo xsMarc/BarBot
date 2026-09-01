@@ -48,10 +48,10 @@ enum class DrinkCategory { COCKTAIL, MOCKTAIL }
  * verdrahtet und muessen mit der Firmware des BarBots uebereinstimmen - eine
  * Umsortierung der Liste aendert sie nicht.
  *
- * [image] ist das freigestellte Drinkbild. Solange es fuer ein Getraenk noch kein
- * eigenes gibt, steht hier [R.drawable.drink_mojito] als Platzhalter. Ein neues
- * Bild einhaengen heisst: PNG nach `res/drawable-nodpi/` legen und hier
- * eintragen, sonst nichts.
+ * [image] ist das freigestellte Drinkbild. Jedes Getraenk hat eine eigene Datei in
+ * `res/drawable-nodpi/`; aktuell steckt in allen dasselbe Testbild. Ein echtes
+ * Bild einhaengen heisst deshalb nur: die Datei mit gleichem Namen ueberschreiben,
+ * im Code aendert sich nichts.
  */
 data class Drink(
     val code: Int,
@@ -65,7 +65,7 @@ data class Drink(
     /** "180 ml · 12,5 % vol" */
     val meta: String,
     val category: DrinkCategory,
-    @DrawableRes val image: Int = R.drawable.drink_mojito,
+    @DrawableRes val image: Int,
 )
 
 /**
@@ -86,6 +86,7 @@ val DRINKS: List<Drink> = listOf(
         ingredientsShort = "Vodka, Tropical Juice",
         meta = "180 ml · 12,5 % vol",
         category = DrinkCategory.COCKTAIL,
+        image = R.drawable.drink_tropical_screwdriver,
     ),
     Drink(
         code = 2, label = "02", name = "Vodka Mate",
@@ -93,6 +94,7 @@ val DRINKS: List<Drink> = listOf(
         ingredientsShort = "Vodka, Mate",
         meta = "180 ml · 12,5 % vol",
         category = DrinkCategory.COCKTAIL,
+        image = R.drawable.drink_vodka_mate,
     ),
     Drink(
         code = 3, label = "03", name = "Gin Tonic",
@@ -100,6 +102,7 @@ val DRINKS: List<Drink> = listOf(
         ingredientsShort = "Gin, Tonic Water",
         meta = "180 ml · 12,5 % vol",
         category = DrinkCategory.COCKTAIL,
+        image = R.drawable.drink_gin_tonic,
     ),
     Drink(
         // Klassisch mit Ginger Beer; der BarBot hat Ginger Ale an der Pumpe.
@@ -108,6 +111,7 @@ val DRINKS: List<Drink> = listOf(
         ingredientsShort = "Vodka, Ginger Ale",
         meta = "180 ml · 12,5 % vol",
         category = DrinkCategory.COCKTAIL,
+        image = R.drawable.drink_moscow_mule,
     ),
     Drink(
         // In der Vorlage "???"
@@ -116,6 +120,7 @@ val DRINKS: List<Drink> = listOf(
         ingredientsShort = "Gin, Ginger Ale, Mate",
         meta = "150 ml · 7,5 % vol",
         category = DrinkCategory.COCKTAIL,
+        image = R.drawable.drink_gin_ginger_mate,
     ),
     Drink(
         // In der Vorlage "??"
@@ -124,6 +129,7 @@ val DRINKS: List<Drink> = listOf(
         ingredientsShort = "Gin, Ginger Ale",
         meta = "180 ml · 12,5 % vol",
         category = DrinkCategory.COCKTAIL,
+        image = R.drawable.drink_gin_buck,
     ),
     Drink(
         // In der Vorlage "?"
@@ -132,6 +138,7 @@ val DRINKS: List<Drink> = listOf(
         ingredientsShort = "Vodka, Ginger Ale, Tropical Juice",
         meta = "180 ml · 12,5 % vol",
         category = DrinkCategory.COCKTAIL,
+        image = R.drawable.drink_tropical_mule,
     ),
     Drink(
         // In der Vorlage "&&&"
@@ -140,6 +147,7 @@ val DRINKS: List<Drink> = listOf(
         ingredientsShort = "Vodka, Tonic Water, Tropical Juice",
         meta = "180 ml · 12,5 % vol",
         category = DrinkCategory.COCKTAIL,
+        image = R.drawable.drink_tropical_tonic_vodka,
     ),
     Drink(
         code = 9, label = "09", name = "Vodka Tonic",
@@ -147,6 +155,7 @@ val DRINKS: List<Drink> = listOf(
         ingredientsShort = "Vodka, Tonic Water",
         meta = "180 ml · 12,5 % vol",
         category = DrinkCategory.COCKTAIL,
+        image = R.drawable.drink_vodka_tonic,
     ),
     Drink(
         // In der Vorlage "&&"
@@ -155,6 +164,7 @@ val DRINKS: List<Drink> = listOf(
         ingredientsShort = "Gin, Tropical Juice, Tonic Water",
         meta = "180 ml · 12,5 % vol",
         category = DrinkCategory.COCKTAIL,
+        image = R.drawable.drink_tropical_gin_tonic,
     ),
 
     // -- Mocktails ------------------------------------------------------------
@@ -165,6 +175,7 @@ val DRINKS: List<Drink> = listOf(
         ingredientsShort = "Ginger Ale, Mate",
         meta = "180 ml · 0 % vol",
         category = DrinkCategory.MOCKTAIL,
+        image = R.drawable.drink_ginger_mate,
     ),
     Drink(
         code = 12, label = "12", name = "Tropical Tonic",
@@ -172,6 +183,7 @@ val DRINKS: List<Drink> = listOf(
         ingredientsShort = "Tropical Juice, Tonic Water",
         meta = "180 ml · 0 % vol",
         category = DrinkCategory.MOCKTAIL,
+        image = R.drawable.drink_tropical_tonic,
     ),
     Drink(
         code = 13, label = "13", name = "Tropical Ginger",
@@ -179,6 +191,7 @@ val DRINKS: List<Drink> = listOf(
         ingredientsShort = "Tropical Juice, Ginger Ale",
         meta = "180 ml · 0 % vol",
         category = DrinkCategory.MOCKTAIL,
+        image = R.drawable.drink_tropical_ginger,
     ),
     Drink(
         // In der Vorlage "&"
@@ -187,6 +200,7 @@ val DRINKS: List<Drink> = listOf(
         ingredientsShort = "Tropical Juice, Ginger Ale, Tonic Water",
         meta = "180 ml · 0 % vol",
         category = DrinkCategory.MOCKTAIL,
+        image = R.drawable.drink_tropical_spark,
     ),
 )
 
