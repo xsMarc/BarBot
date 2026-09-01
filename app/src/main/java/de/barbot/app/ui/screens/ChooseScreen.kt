@@ -27,7 +27,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import de.barbot.app.data.DRINKS
@@ -35,20 +34,19 @@ import de.barbot.app.data.Drink
 import de.barbot.app.ui.CompactHeight
 import de.barbot.app.ui.DesignWidth
 import de.barbot.app.ui.components.DrinkArt
-import de.barbot.app.ui.components.formatSeconds
 import de.barbot.app.ui.theme.BarBotType
 import de.barbot.app.ui.theme.CardWhite
 import de.barbot.app.ui.theme.Field
 import de.barbot.app.ui.theme.Ink35
-import de.barbot.app.ui.theme.Ink40
 import de.barbot.app.ui.theme.Lime
 
 /**
  * Seite 3: Getraenk waehlen.
  *
  * Design: limettengruener Kopf mit abgerundeter Unterkante, darunter die Liste.
- * Waehrend der Sperrzeit sind die Zeilen abgeblendet und zeigen statt des
- * Pfeils die Restzeit; unten laeuft der Sperrbalken.
+ * Waehrend der Sperrzeit bleiben alle Zeilen anklickbar - die Grossansicht dient
+ * zum Nachlesen. Gesperrt ist nur das Bestellen; die Restzeit laeuft im
+ * Sperrbalken am unteren Rand.
  */
 @Composable
 fun ChooseScreen(
@@ -97,10 +95,10 @@ fun ChooseScreen(
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 items(DRINKS, key = { it.code }) { drink ->
+                    // Auch waehrend der Sperre anklickbar: die Grossansicht dient
+                    // zum Nachlesen, das Bestellen sperrt die Infoseite selbst.
                     DrinkRow(
                         drink = drink,
-                        locked = locked,
-                        lockSecondsLeft = lockSecondsLeft,
                         onClick = { onDrinkSelected(drink) },
                     )
                 }
@@ -112,8 +110,6 @@ fun ChooseScreen(
 @Composable
 private fun DrinkRow(
     drink: Drink,
-    locked: Boolean,
-    lockSecondsLeft: Int,
     onClick: () -> Unit,
 ) {
     Row(
@@ -121,8 +117,7 @@ private fun DrinkRow(
             .fillMaxWidth()
             .clip(RoundedCornerShape(13.dp))
             .background(Field)
-            .clickable(enabled = !locked, onClick = onClick)
-            .alpha(if (locked) 0.55f else 1f)
+            .clickable(onClick = onClick)
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(9.dp),
@@ -151,18 +146,12 @@ private fun DrinkRow(
             Text(text = drink.meta, style = BarBotType.MetaSmall)
         }
 
-        if (locked) {
-            Text(
-                text = "noch ${formatSeconds(lockSecondsLeft)}",
-                style = BarBotType.BodySmall.copy(color = Ink40),
-                modifier = Modifier.padding(end = 4.dp),
-            )
-        } else {
-            Text(
-                text = "→",
-                style = BarBotType.Action.copy(color = Ink35),
-                modifier = Modifier.padding(end = 4.dp),
-            )
-        }
+        // Die Restzeit steht im Sperrbalken am unteren Rand, hier waere sie
+        // vierzehnmal dieselbe Information.
+        Text(
+            text = "→",
+            style = BarBotType.Action.copy(color = Ink35),
+            modifier = Modifier.padding(end = 4.dp),
+        )
     }
 }

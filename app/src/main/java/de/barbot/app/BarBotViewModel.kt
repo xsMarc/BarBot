@@ -162,11 +162,16 @@ class BarBotViewModel(application: Application) : AndroidViewModel(application) 
 
     // ---------------------------------------------------------------- Drinks
 
-    /** Drink aus der Liste antippen: oeffnet die Infoseite, sendet noch nichts. */
+    /**
+     * Drink aus der Liste antippen: oeffnet die Infoseite, sendet noch nichts.
+     *
+     * Geht auch waehrend der Sperre - die blockiert das Bestellen, nicht das
+     * Nachlesen. Wird der gerade laufende Drink erneut geoeffnet, bleibt seine
+     * Bestaetigung stehen, statt wieder die Zutaten zu zeigen.
+     */
     fun openDrink(drink: Drink) {
-        if (isLocked) return
         selectedDrink = drink
-        orderSent = false
+        orderSent = isLocked && drink.code == lockedDrink?.code
         screen = Screen.INFO
     }
 

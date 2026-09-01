@@ -94,10 +94,7 @@ fun DrinkInfoScreen(
                     Column(modifier = Modifier.padding(horizontal = 29.dp)) {
                         Text(text = drink.name, style = BarBotType.Hero)
                         Spacer(Modifier.height(5.dp))
-                        Text(
-                            text = "${drink.meta} · Code ${drink.label}",
-                            style = BarBotType.Meta,
-                        )
+                        Text(text = drink.meta, style = BarBotType.Meta)
 
                         Spacer(Modifier.height(18.dp))
 
@@ -181,10 +178,10 @@ private fun SentCard(drink: Drink, deviceName: String?, connected: Boolean) {
         Spacer(Modifier.height(7.dp))
         Text(
             text = if (connected) {
-                "Code ${drink.label} wurde an ${deviceName ?: "den BarBot"} übertragen. " +
+                "Der Auftrag ging an ${deviceName ?: "den BarBot"}. " +
                     "Stelle ein Glas unter den Auslauf."
             } else {
-                "Ohne Verbindung zum BarBot ging Code ${drink.label} nicht raus. " +
+                "Ohne Verbindung zum BarBot ging der Auftrag nicht raus. " +
                     "Die Sperrzeit läuft trotzdem."
             },
             style = BarBotType.Body.copy(fontSize = BarBotType.Body.fontSize),
