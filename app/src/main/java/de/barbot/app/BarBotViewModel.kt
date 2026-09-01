@@ -99,6 +99,15 @@ class BarBotViewModel(application: Application) : AndroidViewModel(application) 
         screen = target
     }
 
+    /**
+     * "Los geht's" auf der Startseite. Steht die Verbindung schon - etwa weil man
+     * von der Auswahl zurueckgegangen ist - fuehrt der Weg direkt zum Getraenk,
+     * sonst ueber die Bluetooth-Seite.
+     */
+    fun start() {
+        screen = if (isConnected) Screen.CHOOSE else Screen.CONNECT
+    }
+
     /** Zurueck-Pfeil / Systemzurueck. Gibt false zurueck, wenn die App beendet werden soll. */
     fun goBack(): Boolean = when (screen) {
         Screen.START -> false

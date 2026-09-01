@@ -129,7 +129,7 @@ fun BarBotApp(onExit: () -> Unit) {
             ) {
                 when (viewModel.screen) {
                     Screen.START -> StartScreen(
-                        onStart = { viewModel.goTo(Screen.CONNECT) },
+                        onStart = viewModel::start,
                     )
 
                     Screen.CONNECT -> ConnectScreen(
