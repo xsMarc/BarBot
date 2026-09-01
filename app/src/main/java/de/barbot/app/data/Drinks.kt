@@ -1,61 +1,192 @@
 package de.barbot.app.data
 
+import androidx.annotation.DrawableRes
+import de.barbot.app.R
+
 /**
- * Ein Drink, den der BarBot mixen kann.
+ * Zentrale Konfiguration des BarBots: was er an Bord hat und was er daraus mischt.
  *
- * [code] ist die Zahl, die per Bluetooth an den Roboter geschickt wird. Die Codes
- * sind fest verdrahtet und muessen mit der Firmware des BarBots uebereinstimmen.
- * Inhalte 1:1 aus dem Design-Projekt ("BarBot App.dc.html").
+ * Hier und nur hier werden Getraenke gepflegt - Name, Zutaten, Mischverhaeltnis,
+ * Bild und die Nummer, die per Bluetooth rausgeht. Die Oberflaeche baut sich
+ * vollstaendig aus [DRINKS] auf, es ist also nichts weiter anzupassen.
+ */
+
+// ---------------------------------------------------------------- Bestueckung
+
+/** Spirituosen an den Pumpen. */
+val SPIRITS: List<String> = listOf("Vodka", "Gin")
+
+/** Filler an den Pumpen. */
+val MIXERS: List<String> = listOf("Tonic Water", "Ginger Ale", "Tropical Juice", "Mate")
+
+/**
+ * Wird von Hand dazugegeben, nicht gepumpt - steht hier, damit die Bestueckung
+ * an einer Stelle dokumentiert ist.
+ */
+val EXTRAS: List<String> = listOf(
+    "Rohrzucker",
+    "Eis",
+    "Zitronen-/Limettensaft",
+    "Grenadine",
+    "Deko: Zitrone, Orange",
+)
+
+/**
+ * Grundlage der Prozentangaben unten. Steht Vodka oder Gin mit einer anderen
+ * Staerke im Regal, hier anpassen und die Werte in [DRINKS] nachziehen.
+ */
+const val SPIRIT_ABV_PERCENT = 37.5
+
+// ---------------------------------------------------------------- Getraenke
+
+enum class DrinkCategory { COCKTAIL, MOCKTAIL }
+
+/**
+ * Ein Getraenk, das der BarBot mischen kann.
+ *
+ * [code] ist die Zahl, die per Bluetooth an den Roboter geht. Die Codes sind fest
+ * verdrahtet und muessen mit der Firmware des BarBots uebereinstimmen - eine
+ * Umsortierung der Liste aendert sie nicht.
+ *
+ * [image] ist das freigestellte Drinkbild. Solange es fuer ein Getraenk noch kein
+ * eigenes gibt, steht hier [R.drawable.drink_mojito] als Platzhalter. Ein neues
+ * Bild einhaengen heisst: PNG nach `res/drawable-nodpi/` legen und hier
+ * eintragen, sonst nichts.
  */
 data class Drink(
     val code: Int,
     /** Zweistellige Anzeige des Codes, so wie im Design ("01"). */
     val label: String,
     val name: String,
-    /** Vollstaendige Zutatenliste fuer die Infoseite. */
+    /** Vollstaendiges Mischverhaeltnis fuer die Infoseite. */
     val ingredients: String,
     /** Kurzform fuer die Auswahlliste. */
     val ingredientsShort: String,
-    /** "250 ml · 10,5 % vol" */
+    /** "180 ml · 12,5 % vol" */
     val meta: String,
+    val category: DrinkCategory,
+    @DrawableRes val image: Int = R.drawable.drink_mojito,
 )
 
+/**
+ * Alle Getraenke in der Reihenfolge der Auswahlseite: erst die Cocktails,
+ * dann die alkoholfreien.
+ *
+ * Die Namen der in der Vorlage noch unbenannten Mischungen ("?", "??", "???",
+ * "&", "&&", "&&&") stehen dort bereits in der Verhaeltnistabelle und sind von
+ * dort uebernommen - sie beschreiben jeweils die Zutaten.
+ */
 val DRINKS: List<Drink> = listOf(
+
+    // -- Cocktails ------------------------------------------------------------
+
     Drink(
-        code = 1, label = "01", name = "Mojito",
-        ingredients = "Weißer Rum 5 cl · Limettensaft 3 cl · Rohrzuckersirup 2 cl · Minze · Soda",
-        ingredientsShort = "Rum, Limette, Minze, Soda",
-        meta = "250 ml · 10,5 % vol",
+        code = 1, label = "01", name = "Tropical Screwdriver",
+        ingredients = "Vodka 6 cl · Tropical Juice 12 cl",
+        ingredientsShort = "Vodka, Tropical Juice",
+        meta = "180 ml · 12,5 % vol",
+        category = DrinkCategory.COCKTAIL,
     ),
     Drink(
-        code = 2, label = "02", name = "Caipirinha",
-        ingredients = "Cachaça 5 cl · Limette 4 cl · Rohrzucker · Crushed Ice",
-        ingredientsShort = "Cachaça, Limette, Zucker",
-        meta = "220 ml · 14 % vol",
+        code = 2, label = "02", name = "Vodka Mate",
+        ingredients = "Vodka 6 cl · Mate 12 cl",
+        ingredientsShort = "Vodka, Mate",
+        meta = "180 ml · 12,5 % vol",
+        category = DrinkCategory.COCKTAIL,
     ),
     Drink(
         code = 3, label = "03", name = "Gin Tonic",
-        ingredients = "Gin 5 cl · Tonic Water 15 cl · Limette · Eis",
-        ingredientsShort = "Gin, Tonic, Limette",
-        meta = "300 ml · 8 % vol",
+        ingredients = "Gin 6 cl · Tonic Water 12 cl",
+        ingredientsShort = "Gin, Tonic Water",
+        meta = "180 ml · 12,5 % vol",
+        category = DrinkCategory.COCKTAIL,
     ),
     Drink(
-        code = 4, label = "04", name = "Cuba Libre",
-        ingredients = "Brauner Rum 5 cl · Cola 15 cl · Limette · Eis",
-        ingredientsShort = "Rum, Cola, Limette",
-        meta = "280 ml · 9 % vol",
+        // Klassisch mit Ginger Beer; der BarBot hat Ginger Ale an der Pumpe.
+        code = 4, label = "04", name = "Moscow Mule",
+        ingredients = "Vodka 6 cl · Ginger Ale 12 cl",
+        ingredientsShort = "Vodka, Ginger Ale",
+        meta = "180 ml · 12,5 % vol",
+        category = DrinkCategory.COCKTAIL,
     ),
     Drink(
-        code = 5, label = "05", name = "Tequila Sunrise",
-        ingredients = "Tequila 4 cl · Orangensaft 12 cl · Grenadine · Eis",
-        ingredientsShort = "Tequila, O-Saft, Grenadine",
-        meta = "260 ml · 11 % vol",
+        // In der Vorlage "???"
+        code = 5, label = "05", name = "Gin Ginger Mate",
+        ingredients = "Gin 3 cl · Ginger Ale 6 cl · Mate 6 cl",
+        ingredientsShort = "Gin, Ginger Ale, Mate",
+        meta = "150 ml · 7,5 % vol",
+        category = DrinkCategory.COCKTAIL,
     ),
     Drink(
-        code = 6, label = "06", name = "Virgin Colada",
-        ingredients = "Ananassaft 12 cl · Kokossirup 3 cl · Sahne · Crushed Ice",
-        ingredientsShort = "Ananas, Kokos, Sahne",
-        meta = "250 ml · 0 % vol",
+        // In der Vorlage "??"
+        code = 6, label = "06", name = "Gin Buck",
+        ingredients = "Gin 6 cl · Ginger Ale 12 cl",
+        ingredientsShort = "Gin, Ginger Ale",
+        meta = "180 ml · 12,5 % vol",
+        category = DrinkCategory.COCKTAIL,
+    ),
+    Drink(
+        // In der Vorlage "?"
+        code = 7, label = "07", name = "Tropical Mule",
+        ingredients = "Vodka 6 cl · Ginger Ale 6 cl · Tropical Juice 6 cl",
+        ingredientsShort = "Vodka, Ginger Ale, Tropical Juice",
+        meta = "180 ml · 12,5 % vol",
+        category = DrinkCategory.COCKTAIL,
+    ),
+    Drink(
+        // In der Vorlage "&&&"
+        code = 8, label = "08", name = "Tropical Tonic Vodka",
+        ingredients = "Vodka 6 cl · Tonic Water 6 cl · Tropical Juice 6 cl",
+        ingredientsShort = "Vodka, Tonic Water, Tropical Juice",
+        meta = "180 ml · 12,5 % vol",
+        category = DrinkCategory.COCKTAIL,
+    ),
+    Drink(
+        code = 9, label = "09", name = "Vodka Tonic",
+        ingredients = "Vodka 6 cl · Tonic Water 12 cl",
+        ingredientsShort = "Vodka, Tonic Water",
+        meta = "180 ml · 12,5 % vol",
+        category = DrinkCategory.COCKTAIL,
+    ),
+    Drink(
+        // In der Vorlage "&&"
+        code = 10, label = "10", name = "Tropical Gin Tonic",
+        ingredients = "Gin 6 cl · Tropical Juice 6 cl · Tonic Water 6 cl",
+        ingredientsShort = "Gin, Tropical Juice, Tonic Water",
+        meta = "180 ml · 12,5 % vol",
+        category = DrinkCategory.COCKTAIL,
+    ),
+
+    // -- Mocktails ------------------------------------------------------------
+
+    Drink(
+        code = 11, label = "11", name = "Ginger Mate",
+        ingredients = "Ginger Ale 9 cl · Mate 9 cl",
+        ingredientsShort = "Ginger Ale, Mate",
+        meta = "180 ml · 0 % vol",
+        category = DrinkCategory.MOCKTAIL,
+    ),
+    Drink(
+        code = 12, label = "12", name = "Tropical Tonic",
+        ingredients = "Tropical Juice 9 cl · Tonic Water 9 cl",
+        ingredientsShort = "Tropical Juice, Tonic Water",
+        meta = "180 ml · 0 % vol",
+        category = DrinkCategory.MOCKTAIL,
+    ),
+    Drink(
+        code = 13, label = "13", name = "Tropical Ginger",
+        ingredients = "Tropical Juice 9 cl · Ginger Ale 9 cl",
+        ingredientsShort = "Tropical Juice, Ginger Ale",
+        meta = "180 ml · 0 % vol",
+        category = DrinkCategory.MOCKTAIL,
+    ),
+    Drink(
+        // In der Vorlage "&"
+        code = 14, label = "14", name = "Tropical Spark",
+        ingredients = "Tropical Juice 6 cl · Ginger Ale 6 cl · Tonic Water 6 cl",
+        ingredientsShort = "Tropical Juice, Ginger Ale, Tonic Water",
+        meta = "180 ml · 0 % vol",
+        category = DrinkCategory.MOCKTAIL,
     ),
 )
 

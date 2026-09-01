@@ -4,12 +4,16 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.barbot.app.R
+import de.barbot.app.ui.CompactHeight
 import de.barbot.app.ui.components.DrinkArt
 import de.barbot.app.ui.components.ScreenBackground
 import de.barbot.app.ui.theme.BarBotType
@@ -35,7 +40,18 @@ import de.barbot.app.ui.theme.Lime
 @Composable
 fun StartScreen(onStart: () -> Unit) {
     ScreenBackground(resId = R.drawable.bg_fruits) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        // Das Fruchtbild laeuft hinter Status- und Navigationsleiste durch,
+        // nur der Inhalt haelt Abstand.
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.systemBars),
+        ) {
+            // Im Querformat bleibt kaum Hoehe: Drinkbild und Abstaende schrumpfen
+            // mit, statt dass sich Logo und Button ueberlagern.
+            val compact = maxHeight < CompactHeight
+            val artHeight = (maxHeight * 0.42f).coerceIn(120.dp, 307.dp)
+            val artWidth = artHeight * (333f / 307f)
 
             Image(
                 painter = painterResource(R.drawable.logo_glass),
@@ -43,9 +59,9 @@ fun StartScreen(onStart: () -> Unit) {
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = 32.dp)
+                    .padding(top = if (compact) 12.dp else 32.dp)
                     .width(135.dp)
-                    .height(75.dp),
+                    .height(if (compact) 52.dp else 75.dp),
             )
 
             // Im Design sitzt der Drink mittig auf 47 % der Hoehe.
@@ -55,7 +71,7 @@ fun StartScreen(onStart: () -> Unit) {
             ) {
                 Box(modifier = Modifier.weight(0.47f))
                 DrinkArt(
-                    modifier = Modifier.size(width = 333.dp, height = 307.dp),
+                    modifier = Modifier.size(width = artWidth, height = artHeight),
                     drinkWidthFraction = 0.84f,
                 )
                 Box(modifier = Modifier.weight(0.53f))
@@ -65,7 +81,7 @@ fun StartScreen(onStart: () -> Unit) {
                 onClick = onStart,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 50.dp),
+                    .padding(bottom = if (compact) 18.dp else 50.dp),
             )
         }
     }

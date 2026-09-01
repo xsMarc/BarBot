@@ -11,12 +11,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -87,14 +90,23 @@ fun ConnectScreen(
     }
 
     ScreenBackground(resId = R.drawable.bg_screen) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        // Der Verlauf laeuft hinter Status- und Navigationsleiste durch,
+        // nur der Inhalt haelt Abstand. Geraeteliste und Aktionsblock liegen
+        // untereinander statt uebereinander: so verdeckt im Querformat nichts
+        // den jeweils anderen Teil, die Liste bekommt einfach weniger Hoehe.
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.systemBars),
+        ) {
 
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .weight(1f)
+                    .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 29.dp)
-                    .padding(top = 32.dp, bottom = 120.dp),
+                    .padding(top = 32.dp, bottom = 24.dp),
             ) {
                 Text(text = "Mit BarBot\nverbinden", style = BarBotType.Display)
 
@@ -125,7 +137,7 @@ fun ConnectScreen(
 
             Column(
                 modifier = Modifier
-                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
                     .padding(horizontal = 29.dp)
                     .padding(bottom = 50.dp),
             ) {

@@ -2,13 +2,19 @@ package de.barbot.app.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -18,13 +24,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import de.barbot.app.BarBotViewModel
 import de.barbot.app.R
 import de.barbot.app.data.Drink
+import de.barbot.app.ui.CompactHeight
 import de.barbot.app.ui.components.ActionBar
 import de.barbot.app.ui.components.BackTile
 import de.barbot.app.ui.components.DrinkArt
-import de.barbot.app.ui.components.LockBar
 import de.barbot.app.ui.components.ScreenBackground
 import de.barbot.app.ui.components.formatSeconds
 import de.barbot.app.ui.theme.BarBotType
@@ -50,74 +55,85 @@ fun DrinkInfoScreen(
     onBack: () -> Unit,
 ) {
     val locked = lockSecondsLeft > 0
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     ScreenBackground(resId = R.drawable.bg_screen) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        // Der Verlauf laeuft randlos durch. Inhalt und Aktionsleiste liegen
+        // untereinander statt uebereinander, damit die Leiste im Querformat
+        // sichtbar bleibt und nichts verdeckt.
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val compact = maxHeight < CompactHeight
+            val artHeight = (maxHeight * 0.38f).coerceIn(110.dp, 280.dp)
+            val artWidth = artHeight * (307f / 280f)
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(bottom = if (locked) 140.dp else 100.dp),
-            ) {
-                BackTile(
-                    onClick = onBack,
-                    modifier = Modifier.padding(start = 19.dp, top = 27.dp),
-                )
+            Column(modifier = Modifier.fillMaxSize()) {
 
-                DrinkArt(
+                Column(
                     modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .size(width = 307.dp, height = 280.dp),
-                    drinkWidthFraction = 0.84f,
-                )
-
-                Spacer(Modifier.height(14.dp))
-
-                Column(modifier = Modifier.padding(horizontal = 29.dp)) {
-                    Text(text = drink.name, style = BarBotType.Hero)
-                    Spacer(Modifier.height(5.dp))
-                    Text(
-                        text = "${drink.meta} · Code ${drink.label}",
-                        style = BarBotType.Meta,
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .windowInsetsPadding(WindowInsets.statusBars)
+                        .padding(bottom = 12.dp),
+                ) {
+                    BackTile(
+                        onClick = onBack,
+                        modifier = Modifier.padding(start = 19.dp, top = if (compact) 12.dp else 27.dp),
                     )
 
-                    Spacer(Modifier.height(18.dp))
+                    DrinkArt(
+                        imageRes = drink.image,
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .size(width = artWidth, height = artHeight),
+                        drinkWidthFraction = 0.84f,
+                    )
 
-                    if (ordered) {
-                        SentCard(drink = drink, deviceName = deviceName, connected = connected)
+                    Spacer(Modifier.height(14.dp))
+
+                    Column(modifier = Modifier.padding(horizontal = 29.dp)) {
+                        Text(text = drink.name, style = BarBotType.Hero)
+                        Spacer(Modifier.height(5.dp))
+                        Text(
+                            text = "${drink.meta} · Code ${drink.label}",
+                            style = BarBotType.Meta,
+                        )
+
+                        Spacer(Modifier.height(18.dp))
+
+                        if (ordered) {
+                            SentCard(drink = drink, deviceName = deviceName, connected = connected)
+                        } else {
+                            IngredientsCard(drink = drink)
+                        }
+                    }
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 29.dp)
+                        // Bei laufender Sperre folgt darunter der Sperrbalken, der den
+                        // unteren Inset schon mitbringt.
+                        .padding(
+                            bottom = (if (compact) 18.dp else 50.dp) +
+                                if (locked) 0.dp else navBarBottom,
+                        ),
+                ) {
+                    if (locked) {
+                        ActionBar(
+                            text = "Gesperrt",
+                            trailing = formatSeconds(lockSecondsLeft),
+                            onClick = {},
+                            enabled = false,
+                            background = CardWhite.copy(alpha = 0.55f),
+                            textStyle = BarBotType.Action.copy(color = Ink40),
+                        )
                     } else {
-                        IngredientsCard(drink = drink)
+                        ActionBar(text = "Jetzt mischen", trailing = "→", onClick = onOrder)
                     }
                 }
             }
-
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(horizontal = 29.dp)
-                    .padding(bottom = if (locked) 84.dp else 50.dp),
-            ) {
-                if (locked) {
-                    ActionBar(
-                        text = "Gesperrt",
-                        trailing = formatSeconds(lockSecondsLeft),
-                        onClick = {},
-                        enabled = false,
-                        background = CardWhite.copy(alpha = 0.55f),
-                        textStyle = BarBotType.Action.copy(color = Ink40),
-                    )
-                } else {
-                    ActionBar(text = "Jetzt mischen", trailing = "→", onClick = onOrder)
-                }
-            }
-
-            LockBar(
-                drinkName = drink.name,
-                secondsLeft = lockSecondsLeft,
-                totalSeconds = BarBotViewModel.LOCK_SECONDS,
-                modifier = Modifier.align(Alignment.BottomCenter),
-            )
         }
     }
 }

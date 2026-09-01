@@ -45,16 +45,38 @@ Bewusst minimal gehalten:
 
 ## Drinks anpassen
 
-Alle Drinks sind hart codiert in `app/src/main/java/de/barbot/app/data/Drinks.kt`,
-Inhalte 1:1 aus dem Design. `code` ist die Zahl, die an den Roboter geht:
+`app/src/main/java/de/barbot/app/data/Drinks.kt` ist die zentrale Konfiguration:
+Bestueckung der Pumpen, alle Getraenke mit Mischverhaeltnis, Bild und der Nummer,
+die per Bluetooth rausgeht. Die Oberflaeche baut sich vollstaendig aus `DRINKS`
+auf - ein Getraenk aendern oder hinzufuegen heisst, dort einen Eintrag anzupassen.
 
-| Code | Drink | Code | Drink |
-|---|---|---|---|
-| 1 | Mojito | 4 | Cuba Libre |
-| 2 | Caipirinha | 5 | Tequila Sunrise |
-| 3 | Gin Tonic | 6 | Virgin Colada (alkoholfrei) |
+Bestueckung: Vodka und Gin an den Spirituosenpumpen, Tonic Water, Ginger Ale,
+Tropical Juice und Mate als Filler. Rohrzucker, Eis, Zitronen-/Limettensaft,
+Grenadine und Deko kommen von Hand dazu.
 
-Einen Drink aendern oder hinzufuegen heisst: einen Eintrag in `DRINKS` anpassen.
+| Code | Cocktail | Verhaeltnis |
+|---|---|---|
+| 1 | Tropical Screwdriver | 6 cl Vodka + 12 cl Tropical Juice |
+| 2 | Vodka Mate | 6 cl Vodka + 12 cl Mate |
+| 3 | Gin Tonic | 6 cl Gin + 12 cl Tonic Water |
+| 4 | Moscow Mule | 6 cl Vodka + 12 cl Ginger Ale |
+| 5 | Gin Ginger Mate | 3 cl Gin + 6 cl Ginger Ale + 6 cl Mate |
+| 6 | Gin Buck | 6 cl Gin + 12 cl Ginger Ale |
+| 7 | Tropical Mule | 6 cl Vodka + 6 cl Ginger Ale + 6 cl Tropical Juice |
+| 8 | Tropical Tonic Vodka | 6 cl Vodka + 6 cl Tonic Water + 6 cl Tropical Juice |
+| 9 | Vodka Tonic | 6 cl Vodka + 12 cl Tonic Water |
+| 10 | Tropical Gin Tonic | 6 cl Gin + 6 cl Tropical Juice + 6 cl Tonic Water |
+
+| Code | Mocktail | Verhaeltnis |
+|---|---|---|
+| 11 | Ginger Mate | 9 cl Ginger Ale + 9 cl Mate |
+| 12 | Tropical Tonic | 9 cl Tropical Juice + 9 cl Tonic Water |
+| 13 | Tropical Ginger | 9 cl Tropical Juice + 9 cl Ginger Ale |
+| 14 | Tropical Spark | 6 cl Tropical Juice + 6 cl Ginger Ale + 6 cl Tonic Water |
+
+Die Prozentangaben in der App sind aus den Verhaeltnissen gerechnet und gehen von
+37,5 % vol fuer Vodka und Gin aus (`SPIRIT_ABV_PERCENT`).
+
 Die Sperrzeit steht in `BarBotViewModel.LOCK_SECONDS`.
 
 ## Bilder
@@ -76,6 +98,11 @@ aendert sich nichts:
 
 `uploads/Button_Start.png` wird nicht gebraucht - der Start-Button ist als
 Flaeche nachgebaut (`StartScreen.kt`).
+
+Jedes Getraenk hat in `Drinks.kt` ein eigenes Feld `image`. Ein eigenes Bild
+einhaengen heisst: freigestelltes PNG nach `res/drawable-nodpi/` legen und beim
+Getraenk eintragen. Solange keins da ist, steht dort `drink_mojito.png` - alle
+Getraenke zeigen deshalb aktuell dasselbe Bild.
 
 ## Bauen
 

@@ -1,5 +1,6 @@
 package de.barbot.app.ui.components
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -12,12 +13,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -32,6 +37,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.barbot.app.R
+import de.barbot.app.ui.DesignWidth
 import de.barbot.app.ui.theme.BarBotType
 import de.barbot.app.ui.theme.CardWhite
 import de.barbot.app.ui.theme.FieldSoft
@@ -43,6 +49,10 @@ import de.barbot.app.ui.theme.TrackGrey
 /**
  * Bildschirmfuellender Hintergrund aus dem Design.
  * Das Design nutzt "center/cover", entspricht [ContentScale.Crop].
+ *
+ * Das Bild fuellt immer das ganze Fenster; der Inhalt darueber bleibt auf
+ * Entwurfsbreite begrenzt und mittig, damit er auf einem Tablet nicht
+ * auseinanderlaeuft.
  */
 @Composable
 fun ScreenBackground(
@@ -57,7 +67,14 @@ fun ScreenBackground(
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize(),
         )
-        content()
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .widthIn(max = DesignWidth)
+                .fillMaxSize(),
+        ) {
+            content()
+        }
     }
 }
 
@@ -65,10 +82,12 @@ fun ScreenBackground(
  * Das Drink-Bild vor seinem runden Schein - im Design die Kombination aus
  * Bg_Drink.png (contain) und dem freigestellten Drink darueber.
  *
+ * [imageRes] kommt aus der zentralen Konfiguration (`Drink.image`).
  * [drinkWidthFraction] entspricht der Breitenangabe im Design (84 % bzw. 74 %).
  */
 @Composable
 fun DrinkArt(
+    @DrawableRes imageRes: Int = R.drawable.drink_mojito,
     modifier: Modifier = Modifier,
     drinkWidthFraction: Float = 0.84f,
 ) {
@@ -80,7 +99,7 @@ fun DrinkArt(
             modifier = Modifier.fillMaxSize(),
         )
         Image(
-            painter = painterResource(R.drawable.drink_mojito),
+            painter = painterResource(imageRes),
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier
@@ -168,8 +187,11 @@ fun LockBar(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(70.dp)
-                .background(FieldSoft),
+                // Hintergrund zuerst, Inset danach: die Flaeche laeuft bis unter die
+                // Navigationsleiste durch, der Inhalt bleibt oberhalb davon.
+                .background(FieldSoft)
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .height(70.dp),
         ) {
             Box(
                 modifier = Modifier
@@ -184,21 +206,26 @@ fun LockBar(
                         .background(Lime),
                 )
             }
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 24.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "$drinkName wird gemischt…",
-                    style = BarBotType.Strong.copy(color = Ink),
-                )
-                Text(
-                    text = "noch ${formatSeconds(secondsLeft)}",
-                    style = BarBotType.Strong.copy(color = Ink45),
-                )
+            // Der Streifen laeuft ueber die volle Breite, die Beschriftung bleibt
+            // buendig zur Inhaltsspalte der Seiten.
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+                Row(
+                    modifier = Modifier
+                        .widthIn(max = DesignWidth)
+                        .fillMaxSize()
+                        .padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "$drinkName wird gemischt…",
+                        style = BarBotType.Strong.copy(color = Ink),
+                    )
+                    Text(
+                        text = "noch ${formatSeconds(secondsLeft)}",
+                        style = BarBotType.Strong.copy(color = Ink45),
+                    )
+                }
             }
         }
     }
@@ -211,29 +238,36 @@ fun LockBar(
  */
 @Composable
 fun OfflineNotice(modifier: Modifier = Modifier) {
-    Row(
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(Ink)
-            .padding(horizontal = 19.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            .background(Ink),
+        contentAlignment = Alignment.TopCenter,
     ) {
-        Box(
+        Row(
             modifier = Modifier
-                .size(7.dp)
-                .clip(CircleShape)
-                .background(CardWhite.copy(alpha = 0.45f)),
-        )
-        Column {
-            Text(
-                text = "Nicht mit dem BarBot verbunden",
-                style = BarBotType.Strong.copy(color = CardWhite, fontSize = 11.5.sp),
+                .widthIn(max = DesignWidth)
+                .fillMaxWidth()
+                .padding(horizontal = 19.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(7.dp)
+                    .clip(CircleShape)
+                    .background(CardWhite.copy(alpha = 0.45f)),
             )
-            Text(
-                text = "Bestellungen werden nicht an den Roboter übertragen.",
-                style = BarBotType.BodySmall.copy(color = CardWhite.copy(alpha = 0.62f)),
-            )
+            Column {
+                Text(
+                    text = "Nicht mit dem BarBot verbunden",
+                    style = BarBotType.Strong.copy(color = CardWhite, fontSize = 11.5.sp),
+                )
+                Text(
+                    text = "Bestellungen werden nicht an den Roboter übertragen.",
+                    style = BarBotType.BodySmall.copy(color = CardWhite.copy(alpha = 0.62f)),
+                )
+            }
         }
     }
 }
